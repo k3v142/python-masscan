@@ -11,11 +11,6 @@ from xml.etree import ElementTree as ET
 
 IS_PY2 = sys.version_info[0] == 2
 
-FORMAT = '[%(asctime)-15s] [%(levelname)s] [%(filename)s %(levelno)s line] %(message)s'
-logger = logging.getLogger(__file__)
-logging.basicConfig(format=FORMAT)
-logger.setLevel(logging.DEBUG)
-
 
 class NetworkConnectionError(Exception):
     pass
@@ -71,8 +66,10 @@ def __scan_progressive__(self, hosts, ports, arguments, callback, sudo):
 class PortScanner(object):
     """Class which allows to use masscan from Python."""
 
-    def __init__(self, masscan_search_path=(
-    'masscan', '/usr/bin/masscan', '/usr/local/bin/masscan', '/sw/bin/masscan', '/opt/local/bin/masscan')):
+    def __init__(self, 
+                 masscan_search_path=('masscan', '/usr/bin/masscan', '/usr/local/bin/masscan', 
+                                      '/sw/bin/masscan', '/opt/local/bin/masscan'),
+                 logger=None):
         """
         Initialize the Port Scanner.
 
@@ -83,6 +80,13 @@ class PortScanner(object):
         :returns: nothing
 
         """
+        if not logger:
+            FORMAT = '[%(asctime)-15s] [%(levelname)s] [%(filename)s %(levelno)s line] %(message)s'
+            self.logger = logging.getLogger(__file__)
+            self.logging.basicConfig(format=FORMAT)
+            self.logger.setLevel(logging.DEBUG)
+        else:
+            self.logger = logger
         self._masscan_path = ''  # masscan path
         self._scan_result = {}
         self._masscan_version_number = 0  # masscan version number
@@ -273,7 +277,7 @@ class PortScanner(object):
         # Launch scan
         args = [self._masscan_path, '-oX', '-'] + h_args + ['-p', ports] * (ports is not None) + f_args
 
-        logger.debug('Scan parameters: "' + ' '.join(args) + '"')
+        self.logger.debug('Scan parameters: "' + ' '.join(args) + '"')
         self._args = ' '.join(args)
 
         if sudo:
