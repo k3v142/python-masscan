@@ -11,6 +11,7 @@ from xml.etree import ElementTree as ET
 
 IS_PY2 = sys.version_info[0] == 2
 
+FORMAT = '[%(asctime)-15s] [%(levelname)s] [%(filename)s %(levelno)s line] %(message)s'
 
 class NetworkConnectionError(Exception):
     pass
@@ -81,10 +82,12 @@ class PortScanner(object):
 
         """
         if not logger:
-            FORMAT = '[%(asctime)-15s] [%(levelname)s] [%(filename)s %(levelno)s line] %(message)s'
             self.logger = logging.getLogger(__file__)
-            self.logging.basicConfig(format=FORMAT)
-            self.logger.setLevel(logging.DEBUG)
+            handler = logging.StreamHandler()
+            handler.setLevel(logging.DEBUG)
+            formatter = logging.Formatter(FORMAT)
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
         else:
             self.logger = logger
         self._masscan_path = ''  # masscan path
